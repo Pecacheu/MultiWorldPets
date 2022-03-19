@@ -24,3 +24,12 @@ Your tamed pets will be teleported along with you under the following conditions
 The teleport system uses an algorithm that finds a random location nearby to teleport each pet to (so that they don't all get stuck together with you in your hitbox).
 
 First, it will choose a random X and Z coordinate nearby, then it will scan for the nearest solid ground above or below the player, with at least two blocks of open air above, and no adjacent dangerous blocks. It will repeat this process until a safe location is found, or *maxTries* is exceeded.
+
+## My Other Stuff
+[Elevators](https://github.com/Pecacheu/Elevators-v2) *(Adds fully-featured Elevators to Minecraft!)*
+
+[RawColors Resource Pack](https://planetminecraft.com/texture_pack/raw-colors-15-low-contrast-complete-resource-pack) *(Low-Contrast Colors for easy-on-the-eyes play)*
+
+[ForestFire Server](https://forestfire.net) *(Check out our MC server, we have custom plugins!)*
+
+[TabPlus Extension for Chrome](http://chrome.google.com/webstore/detail/tabplus/hfcdmjginkilbcfeffkkggemafdjflhp) (Save the headache and manage your tabs)
