@@ -3,6 +3,8 @@
 
 MWP is a simple, lightweight plugin that allows you to keep track of your pets and take them with you to other worlds. All Tamable entities are compatible.
 
+Find the plugin on [BukkitDev](https://dev.bukkit.org/projects/multiworldpets), or see [GitHub](https://github.com/Pecacheu/MultiWorldPets) for the latest updates.
+
 ### Commands
 - `/mwp [player]` List all your pets, or pets of optional player.
 - `/tppet <name>` Teleport your pet nearby.
