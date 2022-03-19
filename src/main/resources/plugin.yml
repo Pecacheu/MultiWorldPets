@@ -1,0 +1,18 @@
+name: MultiWorldPets
+version: '${project.version}'
+main: net.forestfire.mwp.Main
+api-version: 1.18
+authors: [ Pecacheu ]
+description: Take your pets with you to other worlds. MultiVerse compatible!
+commands:
+  mwp:
+    description: List current pets
+    usage: /mwp [player]
+    permission: multiworldpets.use
+  tppet:
+    description: Teleport your pet nearby
+    usage: /tppet <name>
+    permission: multiworldpets.use
+permissions:
+  multiworldpets.use:
+    default: true
