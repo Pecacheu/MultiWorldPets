@@ -3,10 +3,12 @@
 
 MWP is a simple, lightweight plugin that allows you to keep track of your pets and take them with you to other worlds. All Tamable entities are compatible.
 
-Find the plugin on [BukkitDev](https://dev.bukkit.org/projects/multiworldpets), or see [GitHub](https://github.com/Pecacheu/MultiWorldPets) for the latest updates.
+**NEW:** `/mwp` now shows your pet's health, so you can check up on them with no more guesswork!
+
+Find the plugin on [Modrinth](https://modrinth.com/plugin/multiworldpets), or see [GitHub](https://github.com/Pecacheu/MultiWorldPets) for the latest updates.
 
 ### Commands
-- `/mwp [player]` List all your pets, or pets of optional player.
+- `/mwp [player]` List all your pets, or pets of another player.
 - `/tppet <name>` Teleport your pet nearby.
 
 ### Config Settings
@@ -21,15 +23,11 @@ Your tamed pets will be teleported along with you under the following conditions
 - Your pet has been named, or you only have one pet of a given species.
 - There is a safe location to teleport to in the vicinity.
 
-The teleport system uses an algorithm that finds a random location nearby to teleport each pet to (so that they don't all get stuck together with you in your hitbox).
+The teleport system uses an algorithm that finds a random location nearby to teleport each pet to (so that they don't all get stuck together with you in your hitbox.)
 
-First, it will choose a random X and Z coordinate nearby, then it will scan for the nearest solid ground above or below the player, with at least two blocks of open air above, and no adjacent dangerous blocks. It will repeat this process until a safe location is found, or *maxTries* is exceeded.
+## See Also
+[Elevators Plugin](https://github.com/Pecacheu/Elevators-v2) - *Because who said mineshafts were the only type of shaft in Minecraft?*
 
-## My Other Stuff
-[Elevators](https://github.com/Pecacheu/Elevators-v2) *(Adds fully-featured Elevators to Minecraft!)*
+[ForestFire Server](https://forestfire.net) - *Come have fun on my Minecraft server!*
 
-[RawColors Resource Pack](https://planetminecraft.com/texture_pack/raw-colors-15-low-contrast-complete-resource-pack) *(Low-Contrast Colors for easy-on-the-eyes play)*
-
-[ForestFire Server](https://forestfire.net) *(Check out our MC server, we have custom plugins!)*
-
-[TabPlus Extension for Chrome](http://chrome.google.com/webstore/detail/tabplus/hfcdmjginkilbcfeffkkggemafdjflhp) (Save the headache and manage your tabs)
+[TabPlus Extension for Chrome](http://chrome.google.com/webstore/detail/tabplus/hfcdmjginkilbcfeffkkggemafdjflhp) - *Save the headache and manage your tabs*
