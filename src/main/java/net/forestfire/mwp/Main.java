@@ -3,10 +3,11 @@
 package net.forestfire.mwp;
 
 import java.util.*;
-
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -17,6 +18,9 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.BoundingBox;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class Main extends JavaPlugin implements Listener {
 static final String MSG="&e[MultiWorldPets] &r", PERM_USE="multiworldpets.use";
@@ -36,19 +40,27 @@ public void onEnable() {
 public void onDisable() { HandlerList.unregisterAll(); }
 
 @Override
-public boolean onCommand(CommandSender s, Command c, String f, String[] a) {
-	if(c.getName().equalsIgnoreCase("mwp")) {
+public boolean onCommand(@NotNull CommandSender s, Command c, @NotNull String f, String[] a) {
+	if(c.getName().equals("mwp")) {
+		if(a.length>1 || (!(s instanceof Player) && a.length!=1)) {
+			msg(s,"&cUsage: /mwp [player]"); return true;
+		}
 		OfflinePlayer p=a.length>0?Bukkit.getOfflinePlayerIfCached(a[0]):(Player)s;
 		if(p==null) msg(s,"&cNo such player!"); else {
 			UUID u=p.getUniqueId(); msg(s,"Pets of &e"+p.getName()+"&r:");
 			for(World w: Bukkit.getWorlds()) for(LivingEntity pet: getPetsOf(u,w)) {
-				Location l=pet.getLocation(); msg(s,"&a"+pet.getName()+" &rin &d"+w.getName()
-					+" &rat &b("+l.getBlockX()+","+l.getBlockY()+","+l.getBlockZ()+")");
+				Location l=pet.getLocation();
+				int h=(int)Math.round(pet.getHealth()),
+					mh=(int)Math.round(pet.getMaxHealth());
+				msg(s,"&a"+pet.getName()+" &rin &d"+w.getName()
+					+" &rat &b"+locStr(l)+" &r(&e"+h+"&r/&e"+mh+"&c♥&r)");
 			}
 		}
 		return true;
-	} else if(c.getName().equalsIgnoreCase("tppet")) {
-		if(a.length!=1) msg(s,"&cUsage: /tppet <name>"); else {
+	} else if(c.getName().equals("tppet")) {
+		if(!(s instanceof Player)) msg(s,"&cCannot use tppet from the console.");
+		else if(a.length!=1) msg(s,"&cUsage: /tppet <name>");
+		else {
 			String n=a[0]; UUID u=((Player)s).getUniqueId();
 			for(World w: Bukkit.getWorlds()) for(LivingEntity pet: getPetsOf(u,w)) {
 				if(n.equalsIgnoreCase(pet.getName())) { tpPet(pet, ((Player)s)); return true; }
@@ -70,14 +82,15 @@ public void onPlayerChangedWorld(PlayerChangedWorldEvent event) { if(event.getPl
 
 void tpPet(LivingEntity pet, Player p) {
 	String w=pet.getWorld().getName(), nw=p.getWorld().getName(),
-	n=p.getName(); Location nl=randomLoc(p.getLocation());
+	n=pet.getName(); Location nl=randomLoc(pet, p.getLocation());
 	if(nl != null) { //Teleport
 		killOthers(pet); pet.teleport(nl); sitting(pet,false);
-		msg(p,MSG+"&bTeleported &a"+n+"&b!"); msg(null,MSG+"&bTeleported "
-			+p.getName()+"'s &bpet &a"+n+" &bfrom &d"+w+" &bto &d"+nw);
-	} else { //Not safe
-		String e=MSG+"&cFailed to Teleport &a"+n+" &cfrom &d"+w
-			+" &cto &d"+nw+"&c!"; msg(p,e); msg(null,e);
+		msg(p,MSG+"&bTeleported &a"+n+"&b!");
+		msg(null,MSG+"&bTeleported "+p.getName()
+			+"'s &bpet &a"+n+" &bfrom &d"+w+" &bto &d"+nw);
+	} else { //Unsafe
+		String e=MSG+"&cFailed to Teleport &a"+n+" &cfrom &d"+w+" &cto &d"+nw+"&c!";
+		msg(p,e); msg(null,e);
 	}
 }
 
@@ -98,34 +111,57 @@ static void killOthers(LivingEntity pet) {
 	}
 }
 
-static boolean isSafe(Location l) {
-	Material t=l.getBlock().getType(), ta=l.clone().add(0,1,0).getBlock().getType();
-	boolean u=l.getY()==0 || UNSAFE.contains(t) || UNSAFE.contains(t=ta);
-	if(u&&DBG) msg(null,MSG+"&cLocation Unsafe! "+t); return !u;
-}
-static boolean air(World w, int x, int y, int z) { Block b=w.getBlockAt(x,y,z); return b.isPassable()&&!b.isLiquid(); }
-
-/*If found air (a=1) going down (dir=1), find block, out is y+1
-If found block (a=0) going up (dir=0), find air, out is y
-If found block (a=0) going down (dir=1), find air, find block, out is y+1
-If found air (a=1) going up (dir=0), find block, then air, out is y*/
-static int findGnd(World w, int x, int m, int z, boolean dir) {
-	int y=dir?m:m+2, e=dir?0:w.getMaxHeight(); if(DBG) msg(null,"Finding ground "+(dir?"below ":"above ")+x+" "+m+" "+z);
-	boolean a=air(w,x,m+1,z); for(; y!=e; y+=dir?-1:1) if(a!=air(w,x,y,z)) { if(a==dir) return dir?y+1:y; a=!a; }
-	return 0;
-}
-static int findGnd(World w, int x, int m, int z) {
-	int d=findGnd(w,x,m,z,true), u=findGnd(w,x,m,z,false), g=(u==0 || d>0 && m-d < u-m)?d:u;
-	if(DBG) msg(null,MSG+"GPos: d="+d+" u="+u+" ("+x+" "+g+" "+z+")"); return g;
-}
-
-static Location randomLoc(Location l) {
-	World w=l.getWorld(); double x=l.getBlockX(),z=l.getBlockZ(),nx,nz;
-	for(int i=0,d=RADIUS*2,m=l.getBlockY(); i<MAX_LOC_TRIES; i++) {
-		nx=x+Math.floor(Math.random()*d)-RADIUS+.5; nz=z+Math.floor(Math.random()*d)-RADIUS+.5;
-		l=new Location(w,nx,findGnd(w,(int)nx,m,(int)nz),nz); if(isSafe(l)) return l;
+static Location randomLoc(LivingEntity pet, Location l) {
+	BoundingBox size=pet.getBoundingBox();
+	int d=RADIUS*2, y=l.getBlockY();
+	double x=l.getBlockX(), z=l.getBlockZ();
+	for(int i=0; i<MAX_LOC_TRIES; ++i) {
+		l.setX(x+Math.round(Math.random()*d)-RADIUS+.5);
+		l.setZ(z+Math.round(Math.random()*d)-RADIUS+.5);
+		Location a=findSafeGnd(size, l, true),
+			b=findSafeGnd(size, l, false);
+		if(DBG) msg(null,MSG+"Try x="+l.getX()+" z="+l.getZ()
+			+", Above @ "+locStr(a)+" Below @ "+locStr(b));
+		//Choose a or b
+		if(a==null) { if(b!=null) return b; }
+		else if(b==null) return a;
+		else if(Math.abs(a.getBlockY()-y) <= Math.abs(b.getBlockY()-y)) return a;
+		else return b;
 	}
 	return null;
+}
+
+static Location findSafeGnd(BoundingBox size, Location l, boolean yDir) {
+	l=l.clone();
+	int y=l.getBlockY(),
+		lim=yDir ? Math.min(y+RADIUS, l.getWorld().getMaxHeight()-1):
+		Math.max(y-RADIUS, l.getWorld().getMinHeight()+1);
+	for(; yDir?(y<=lim):(y>=lim); y+=yDir?1:-1) {
+		l.setY(y); if(isSafe(size, l)) return l;
+	}
+	return null;
+}
+static boolean isSafe(BoundingBox size, Location l) {
+	//Check floor
+	if(_unsafe(l.clone().add(0,-1,0), 2)) return false;
+	//Check clearance
+	double h=size.getHeight(),
+		cx=Math.max(Math.ceil((size.getWidthX()/2)-.5), 0),
+		cz=Math.max(Math.ceil((size.getWidthZ()/2)-.5), 0);
+	for(double x=-cx; x<=cx; ++x) for(double y=0; y<h; ++y) for(double z=-cz; z<=cz; ++z) {
+		if(_unsafe(l.clone().add(x,y,z), 1)) return false;
+	}
+	return true;
+}
+static boolean _unsafe(Location l, int mode) {
+	Block b=l.getBlock();
+	switch(mode) {
+	case 1: //Air
+		if(!b.isPassable() || b.isLiquid()) return true;
+	break; case 2: //Floor
+		if(!b.isSolid() && !b.isLiquid()) return true;
+	}
+	return UNSAFE.contains(b.getType());
 }
 
 static boolean sitting(LivingEntity entity) { //Getter
@@ -134,6 +170,10 @@ static boolean sitting(LivingEntity entity) { //Getter
 }
 static void sitting(LivingEntity entity, boolean sit) { //Setter
 	if(entity instanceof Sittable) ((Sittable)entity).setSitting(sit);
+}
+
+static String locStr(Location l) {
+	return l!=null ? "("+l.getBlockX()+", "+l.getBlockY()+", "+l.getBlockZ()+")" : "null";
 }
 
 //-------------------  PecacheuLib Functions -------------------
