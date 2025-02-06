@@ -6,8 +6,6 @@ import java.util.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.*;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -20,7 +18,6 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class Main extends JavaPlugin implements Listener {
 static final String MSG="&e[MultiWorldPets] &r", PERM_USE="multiworldpets.use";
@@ -77,7 +74,8 @@ public boolean onCommand(@NotNull CommandSender s, Command c, @NotNull String f,
 @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 public void onPlayerChangedWorld(PlayerChangedWorldEvent event) { if(event.getPlayer().hasPermission(PERM_USE)) {
 	Player p=event.getPlayer(); World f=event.getFrom();
-	for(LivingEntity pet: getPetsOf(p.getUniqueId(),f)) if(!pet.isDead() && !sitting(pet)) tpPet(pet,p);
+	for(LivingEntity pet: getPetsOf(p.getUniqueId(),f))
+		if(!pet.isDead() && !pet.isLeashed() && !sitting(pet)) tpPet(pet,p);
 }}
 
 void tpPet(LivingEntity pet, Player p) {

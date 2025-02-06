@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.forestfire</groupId>
 	<artifactId>MultiWorldPets</artifactId>
-	<version>1.2</version>
+	<version>1.2.1</version>
 	<packaging>jar</packaging>
 	<name>MultiWorldPets</name>
 	<description>Take your pets with you to other worlds. MultiVerse compatible!</description>
